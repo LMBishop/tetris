@@ -22,7 +22,7 @@ RUN npm run build
 # fuck nginx
 EXPOSE 4173
 
-CMD ["npm", "run", "preview"]
+CMD ["npm", "run", "preview-host"]
 
 # FROM nginx:1.21.1-alpine
 # 

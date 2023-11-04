@@ -9,7 +9,7 @@ export type Tetromino = {
   height: number;
 };
 
-export const Tetrominoes: { [key: string]: Tetromino } = {
+export const allTetrominoes: { [key: string]: Tetromino } = {
   I: {
     id: "I",
     shapes: [

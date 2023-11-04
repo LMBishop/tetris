@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { onMounted, ref, type Ref } from 'vue';
-import { mergeTetrominoWithBoard, tetrominoCollidesWithBoard } from '@/util/tetris';
-import { type Tetromino, Tetrominoes } from '@/model/tetrominoes';
+import { ref, type Ref } from 'vue';
+import { mergeTetrominoWithBoard, randomiseNextTetrominoes, tetrominoCollidesWithBoard } from '@/util/tetris';
+import { type Tetromino, allTetrominoes } from '@/model/tetrominoes';
 import { type Board } from '@/model/board';
 
 const renderBoard: Ref<Board> = ref([[]]);
@@ -28,9 +28,15 @@ let gameBoard: Board = [
   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 ]
 let currentTetromino: Tetromino | null = null;
-let nextTetromino: Ref<Tetromino | undefined> = ref();
+let nextTetrominoes: Ref<Array<Tetromino>> = ref([]);
 let gameInterval: ReturnType<typeof setInterval>;
+let gameSpeed = 1000;
+let elapsedBlocks = 0;
 let gameInProgress = false;
+let points = ref(0);
+let notificationMessage = ref('Press start to begin!');
+let notificationBg = ref('\#dfdfdf');
+let notificationFg = ref('black');
 
 function updateRender() {
   if (currentTetromino) {
@@ -40,64 +46,128 @@ function updateRender() {
   }
 }
 
+
+function rescheduleTickTimer() {
+  clearInterval(gameInterval);
+  gameInterval = setInterval(tick, gameSpeed);
+}
+
 const tick = () => {
   if (!currentTetromino) {
-    currentTetromino = { ...nextTetromino.value! };
+    let next = nextTetrominoes.value.shift();
+    currentTetromino = { ...next! };
+    currentTetromino.col = 3;
     if (tetrominoCollidesWithBoard(gameBoard, currentTetromino)) {
       clearInterval(gameInterval);
-      alert('Game over!');
+      notificationBg.value = '\#FF4136';
+      notificationFg.value = 'white';
+      notificationMessage.value = 'Game over!';
       return;
     }
 
-    nextTetromino.value = Object.values(Tetrominoes)[Math.floor(Math.random() * 7)];
+
+    if (nextTetrominoes.value.length === 0) {
+      nextTetrominoes.value = randomiseNextTetrominoes();
+    }
   }
-  
+
   updateRender();
-  
-  if (tetrominoCollidesWithBoard(gameBoard, { ...currentTetromino, row: currentTetromino.row + 1})) {
+
+  if (tetrominoCollidesWithBoard(gameBoard, { ...currentTetromino, row: currentTetromino.row + 1 })) {
     gameBoard = mergeTetrominoWithBoard(gameBoard, currentTetromino);
     currentTetromino = null;
+    ++elapsedBlocks;
+
+    let clears = 0;
+    for (let row = 0; row < gameBoard.length; ++row) {
+      if (gameBoard[row].every(cell => cell)) {
+        clears++;
+        gameBoard.splice(row, 1);
+        gameBoard.unshift([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+      }
+    }
+    
+    switch (clears) {
+      case 1:
+        points.value += 40;
+        break;
+      case 2:
+        points.value += 100;
+        break;
+      case 3:
+        points.value += 300;
+        break;
+      case 4:
+        points.value += 1200;
+        break;
+    }
+
+    if (gameSpeed > 150 && elapsedBlocks % 3 === 0) {
+      gameSpeed = Math.max(150, gameSpeed - (gameSpeed > 300 ? 75 : 10));
+      rescheduleTickTimer();
+    }
     return;
   }
 
   ++currentTetromino.row;
+  
 };
 
 function startGame() {
-  gameInterval = setInterval(tick, 250);
-  nextTetromino.value = Object.values(Tetrominoes)[Math.floor(Math.random() * 7)];
+  elapsedBlocks = 0;
+  gameSpeed = 1000;
+  nextTetrominoes.value = randomiseNextTetrominoes();
   gameInProgress = true;
+  notificationMessage.value = '';
+  
+  updateRender();
+  rescheduleTickTimer();
 }
 
 document.addEventListener('keydown', event => {
   event.preventDefault();
   if (currentTetromino && event.key === 'r') {
-    if (!tetrominoCollidesWithBoard(gameBoard, { ...currentTetromino, rotation: (currentTetromino.rotation + 1) % 4})) {
+    if (!tetrominoCollidesWithBoard(gameBoard, { ...currentTetromino, rotation: (currentTetromino.rotation + 1) % 4 })) {
       currentTetromino!.rotation = (currentTetromino!.rotation + 1) % 4;
-    } 
+    }
 
     updateRender();
   }
   if (currentTetromino && ['ArrowLeft', 'h'].includes(event.key)) {
-    if (!tetrominoCollidesWithBoard(gameBoard, { ...currentTetromino, col: currentTetromino.col - 1})) {
+    if (!tetrominoCollidesWithBoard(gameBoard, { ...currentTetromino, col: currentTetromino.col - 1 })) {
       --currentTetromino.col;
     }
-    
+
     updateRender();
   }
   if (currentTetromino && ['ArrowRight', 'l'].includes(event.key)) {
-    if (!tetrominoCollidesWithBoard(gameBoard, { ...currentTetromino, col: currentTetromino.col + 1})) {
+    if (!tetrominoCollidesWithBoard(gameBoard, { ...currentTetromino, col: currentTetromino.col + 1 })) {
       ++currentTetromino.col;
     }
-    
+
     updateRender();
   }
-  if (currentTetromino && ['ArrowDown', 'j'].includes(event.key)) {
-    if (!tetrominoCollidesWithBoard(gameBoard, { ...currentTetromino, row: currentTetromino.row + 1})) {
+  if (currentTetromino && ['ArrowDown', 'j', 'z'].includes(event.key)) {
+    if (!tetrominoCollidesWithBoard(gameBoard, { ...currentTetromino, row: currentTetromino.row + 1 })) {
       ++currentTetromino.row;
     }
-    
+
     updateRender();
+  }
+  if (currentTetromino && ['ArrowUp', 'k', 'c'].includes(event.key)) {
+    let rowsDropped = 0;
+    while (!tetrominoCollidesWithBoard(gameBoard, { ...currentTetromino, row: currentTetromino.row + 1 })) {
+      ++currentTetromino.row;
+      ++rowsDropped;
+    }
+    
+    if (rowsDropped === 0) {
+      return;
+    }
+    
+    points.value += rowsDropped + 1;
+
+    tick();
   }
 });
 </script>
@@ -105,26 +175,53 @@ document.addEventListener('keydown', event => {
 <template>
   <main>
     <h1>Tetris</h1>
-    <button v-if="!gameInProgress" @click="startGame">Start game</button>
     <div class="cols">
-      <div class="tetris-board">
-        <div v-for="(row, rowIndex) of renderBoard" class="tetris-row">
-          <div v-for="(col, colIndex) of row" class="tetris-cell"
-            :style="{ 'background-color': col ? `rgb(${Tetrominoes[col].color})` : 'white' }">
-
-          </div>
-        </div>
-      </div>
       <div>
-        <p>Next up</p>
-        <div class="next-tetromino">
-          <div v-for="(row, rowIndex) of nextTetromino?.shapes[0]" class="tetris-row">
+        <div v-if="notificationMessage" class="notification-banner" :style="{ 'background-color': notificationBg, 'color': notificationFg}">
+          {{ notificationMessage }}
+        </div>
+        <div class="tetris-board">
+          <div v-for="(row, rowIndex) of renderBoard" class="tetris-row">
             <div v-for="(col, colIndex) of row" class="tetris-cell"
-              :style="{ 'background-color': col ? `rgb(${nextTetromino?.color})` : 'white' }">
+              :style="{ 'background-color': col ? `rgb(${allTetrominoes[col].color})` : 'white' }">
 
             </div>
           </div>
         </div>
+      </div>
+      <div class="game-info">
+        <button v-if="!gameInProgress" @click="startGame">Start game</button>
+        <h2>Next up</h2>
+        <div class="next-tetromino">
+          <div v-for="(row, rowIndex) of nextTetrominoes[0]?.shapes[0]" class="tetris-row">
+            <div v-for="(col, colIndex) of row" class="tetris-cell"
+              :style="{ 'background-color': col ? `rgb(${nextTetrominoes[0]?.color})` : 'white' }">
+
+            </div>
+          </div>
+        </div>
+        
+        <h2>Score</h2>
+        <h3>
+          {{ points }}
+        </h3>
+
+        <h2>Controls</h2>
+        <p>
+          To move left and right, use the arrow keys or <kbd>H</kbd> and <kbd>L</kbd>.
+        </p>
+
+        <p>
+          To rotate, use <kbd>R</kbd>.
+        </p>
+
+        <p>
+          To do a soft drop, use the arrow down key or <kbd>J</kbd>.
+        </p>
+
+        <p>
+          To do a hard drop, use the arrow up key or <kbd>K</kbd>.
+        </p>
       </div>
     </div>
 
@@ -138,10 +235,21 @@ document.addEventListener('keydown', event => {
   gap: 20px;
 }
 
+.game-info {
+  max-width: 250px;
+}
+
 .tetris-board {
   width: calc(32px * 10);
   height: calc(32px * 20);
   border: 1px solid #dfdfdf;
+}
+
+.notification-banner {
+  width: calc(32px * 10 + 2px);
+  height: 22px;
+  text-align: center;
+  position: absolute;
 }
 
 .next-tetromino {

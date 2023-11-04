@@ -1,5 +1,5 @@
 import type { Board } from "@/model/board";
-import type { Tetromino } from "@/model/tetrominoes";
+import { allTetrominoes, type Tetromino } from "@/model/tetrominoes";
 
 export function mergeTetrominoWithBoard(board: Board, tetromino: Tetromino): Board {
   return board.map((row, rowIndex) => {
@@ -37,4 +37,22 @@ export function tetrominoCollidesWithBoard(board: Board, tetromino: Tetromino): 
       return false;
     });
   });
+}
+
+export function randomiseNextTetrominoes(): Array<Tetromino> {
+  const tetrominoes = Object.values(allTetrominoes);
+  let currentIndex = tetrominoes.length,
+    randomIndex;
+
+  while (currentIndex > 0) {
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+
+    [tetrominoes[currentIndex], tetrominoes[randomIndex]] = [
+      tetrominoes[randomIndex],
+      tetrominoes[currentIndex],
+    ];
+  }
+
+  return tetrominoes;
 }

@@ -69,5 +69,6 @@ function sendRight() {
   
   .controls button {
     flex-grow: 1;
+    touch-action: none;
   }
 </style>

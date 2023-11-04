@@ -1,4 +1,4 @@
-name: Deploy frontend to AWS
+name: Deploy backend to AWS
 
 on:
   workflow_dispatch:
@@ -21,12 +21,12 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
 
-    - name: Build & push frontend Docker image
+    - name: Build & push backend Docker image
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         ECR_REPOSITORY: tetris
-        IMAGE_TAG: frontend
+        IMAGE_TAG: backend
       run: |
-        cd frontend
+        cd backend
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG

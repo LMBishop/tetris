@@ -17,14 +17,17 @@ ENV VITE_BACKEND_WS_URL ${BACKEND_WS_URL}
 ARG FRONTEND_URL
 ENV VITE_FRONTEND_BASE_URL ${FRONTEND_URL}
 
-
 RUN npm run build
 
+# fuck nginx
+EXPOSE 4173
 
-FROM nginx:1.21.1-alpine
+CMD ["npm", "run", "preview"]
 
-COPY --from=build /app/dist /usr/share/nginx/html
-
-EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]
+# FROM nginx:1.21.1-alpine
+# 
+# COPY --from=build /app/dist /usr/share/nginx/html
+# 
+# EXPOSE 80
+# 
+# CMD ["nginx", "-g", "daemon off;"]

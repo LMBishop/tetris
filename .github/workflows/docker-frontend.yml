@@ -23,10 +23,13 @@ jobs:
 
     - name: Build & push frontend Docker image
       env:
+        FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
+        BACKEND_HTTP_URL: ${{ secrets.BACKEND_HTTP_URL }}
+        BACKEND_WS_URL: ${{ secrets.BACKEND_WS_URL }}
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         ECR_REPOSITORY: tetris
         IMAGE_TAG: frontend
       run: |
         cd frontend
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker build --build-arg FRONTEND_URL=$FRONTEND_URL --build-arg BACKEND_HTTP_URL=$BACKEND_HTTP_URL --build-arg BACKEND_WS_URL=$BACKEND_WS_URL -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG

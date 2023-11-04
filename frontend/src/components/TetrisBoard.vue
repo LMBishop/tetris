@@ -113,7 +113,7 @@ const tick = () => {
         break;
     }
 
-    if (gameSpeed > 150 && elapsedBlocks % 3 === 0) {
+    if (!props.networked && gameSpeed > 150 && elapsedBlocks % 3 === 0) {
       gameSpeed = Math.max(150, gameSpeed - (gameSpeed > 300 ? 75 : 10));
       rescheduleTickTimer();
     }
@@ -129,7 +129,7 @@ const tick = () => {
 
 function startGame() {
   elapsedBlocks = 0;
-  gameSpeed = 1000;
+  gameSpeed = props.networked ? 350 : 1000;
   nextTetrominoes.value = randomiseNextTetrominoes();
   gameInProgress = true;
   notificationMessage.value = '';

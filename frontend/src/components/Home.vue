@@ -8,8 +8,5 @@
     <li>
       <RouterLink to="/host">Host networked game</RouterLink>
     </li>
-    <li>
-      <RouterLink to="/join">Join networked game</RouterLink>
-    </li>
   </ul>
 </template>

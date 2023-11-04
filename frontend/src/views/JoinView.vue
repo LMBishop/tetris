@@ -51,10 +51,23 @@ function sendRight() {
     <h1 v-if="joiningGame">Joining game "{{ sessionId }}"...</h1>
     <h1 v-if="connected">Connected to "{{ sessionId }}"</h1>
     <h1 v-if="gameState === 'waiting'">Waiting for host to start the game...</h1>
-    <div v-if="gameState === 'playing'">
+    <div class='controls' v-if="gameState === 'playing'">
       <button @click="sendLeft">Left</button>
       <button @click="sendRotate">Rotate</button>
       <button @click="sendRight">Right</button>
     </div>
   </main>
 </template>
+
+<style scoped>
+  .controls {
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+    gap: 0.5rem;
+  }
+  
+  .controls button {
+    flex-grow: 1;
+  }
+</style>

@@ -113,7 +113,7 @@ const tick = () => {
         break;
     }
 
-    if (!props.networked && gameSpeed > 150 && elapsedBlocks % 3 === 0) {
+    if (gameSpeed > 150 && elapsedBlocks % 3 === 0) {
       gameSpeed = Math.max(150, gameSpeed - (gameSpeed > 300 ? 75 : 10));
       rescheduleTickTimer();
     }

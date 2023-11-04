@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import type TetrisBoard from '../components/Board/TetrisBoard.vue';
-
+import type Home from '../components/Home.vue';
 </script>
 
 <template>
   <main>
-    <TetrisBoard></TetrisBoard>
+    <Home></Home>
   </main>
 </template>

@@ -62,6 +62,8 @@ function openSocket(id: string) {
   <main>
     <template v-if="waitingForCode">
       <h1>Requesting session...</h1>
+      <p>If you are stuck on this page then disconnect from eduroam and use the guest network (or mobile data).
+        UoN eduroam appears to block insecure websockets over the Internet which breaks this entire app.</p>
     </template>
     <template v-if="!started && !waitingForCode">
       <h1>Join this game</h1>

@@ -48,7 +48,11 @@ function sendRight() {
 
 <template>
   <main>
-    <h1 v-if="joiningGame">Joining game "{{ sessionId }}"...</h1>
+    <template v-if="joiningGame">
+      <h1>Joining game "{{ sessionId }}"...</h1>
+      <p>If you are stuck on this page then disconnect from eduroam and use the guest network (or mobile data).
+        UoN eduroam appears to block insecure websockets over the Internet which breaks this entire app.</p>
+    </template>
     <h1 v-if="connected">Connected to "{{ sessionId }}"</h1>
     <h1 v-if="gameState === 'waiting'">Waiting for host to start the game...</h1>
     <div class='controls' v-if="gameState === 'playing'">
@@ -60,15 +64,15 @@ function sendRight() {
 </template>
 
 <style scoped>
-  .controls {
-    display: flex;
-    flex-direction: row;
-    height: 100vh;
-    gap: 0.5rem;
-  }
-  
-  .controls button {
-    flex-grow: 1;
-    touch-action: none;
-  }
+.controls {
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+  gap: 0.5rem;
+}
+
+.controls button {
+  flex-grow: 1;
+  touch-action: none;
+}
 </style>

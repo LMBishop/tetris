@@ -8,6 +8,7 @@ const sessionId = route.params.id;
 const joiningGame = ref(true);
 const connected = ref(false);
 const gameState = ref('');
+const controlsLocked = ref(false);
 
 const socket = new WebSocket(`${import.meta.env.VITE_BACKEND_WS_URL}`);
 socket.onopen = () => {
@@ -26,6 +27,13 @@ socket.onmessage = (event) => {
 };
 
 function sendMove(move: string) {
+  if (controlsLocked.value) {
+    return;
+  }
+  controlsLocked.value = true;
+  setTimeout(() => {
+    controlsLocked.value = false;
+  }, 1000);
   socket.send(JSON.stringify({
     action: 'move',
     sessionId: sessionId,
@@ -56,9 +64,9 @@ function sendRight() {
     <h1 v-if="connected">Connected to "{{ sessionId }}"</h1>
     <h1 v-if="gameState === 'waiting'">Waiting for host to start the game...</h1>
     <div class='controls' v-if="gameState === 'playing'">
-      <button @click="sendLeft">Left</button>
-      <button @click="sendRotate">Rotate</button>
-      <button @click="sendRight">Right</button>
+      <button @click="sendLeft" :disabled="controlsLocked">Left</button>
+      <button @click="sendRotate" :disabled="controlsLocked">Rotate</button>
+      <button @click="sendRight" :disabled="controlsLocked">Right</button>
     </div>
   </main>
 </template>

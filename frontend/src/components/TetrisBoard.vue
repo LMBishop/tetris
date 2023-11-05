@@ -6,7 +6,8 @@ import { type Board } from '@/model/board';
 
 const props = defineProps({
   networked: Boolean,
-  inputQueue: Array<string>
+  inputQueue: Array<string>,
+  qrCode: String,
 });
 
 const renderBoard: Ref<Board> = ref([[]]);
@@ -291,6 +292,10 @@ onMounted(() => {
           <p>
             To do a hard drop, use the arrow up key or <kbd>K</kbd>.
           </p>
+        </div>
+        <div v-if="networked">
+          <h2>Join this game</h2>
+          <QRCode size=200 level="M" :value="qrCode"></QRCode>
         </div>
       </div>
     </div>

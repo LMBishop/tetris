@@ -70,6 +70,6 @@ function openSocket(id: string) {
       <p>Connected clients: {{ numClients }}</p>
       <button @click="startGame">Start game</button>
     </template>
-    <TetrisBoard v-if="started" :networked="true" :input-queue="inputQueue"></TetrisBoard>
+    <TetrisBoard v-if="started" :networked="true" :input-queue="inputQueue" :qrCode="url"></TetrisBoard>
   </main>
 </template>

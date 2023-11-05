@@ -1,5 +1,5 @@
 import { Server } from "http";
-import { addSessionClient, getSession, setSessionHost } from "../config/session-store.js";
+import { addSessionClient, getSession, setSessionHost, setSessionState } from "../config/session-store.js";
 import { WebSocketServer } from "ws";
 import { v4 as uuidv4 } from "uuid";
 
@@ -75,6 +75,8 @@ export const createWebsocketServer = (server: Server): WebSocketServer => {
         if (!session) {
           return;
         }
+        
+        setSessionState(data.sessionId, "playing");
 
         sendToClient(session.host!, {
           action: "state",

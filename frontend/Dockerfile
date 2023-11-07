@@ -8,18 +8,13 @@ RUN npm install
 
 COPY . .
 
-ENV VITE_BACKEND_BASE_URL
-
-ENV VITE_BACKEND_WS_URL
-
-ENV VITE_FRONTEND_BASE_URL
-
-# RUN npm run build
-
-# fuck nginx
 EXPOSE 4173
 
 CMD ["npm", "run", "preview-host"]
+
+# fuck nginx
+
+# RUN npm run build
 
 # FROM nginx:1.21.1-alpine
 # 

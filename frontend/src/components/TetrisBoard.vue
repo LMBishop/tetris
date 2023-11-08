@@ -173,7 +173,8 @@ function dropTetromino() {
   if (rowsDropped === 0) {
     return;
   }
-
+  
+  freezeTick = true;
   points.value += rowsDropped + 1;
 
   tick();

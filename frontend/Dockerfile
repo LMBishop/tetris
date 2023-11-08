@@ -10,12 +10,11 @@ COPY . .
 
 EXPOSE 4173
 
+RUN npm run build
+
 CMD ["npm", "run", "preview-host"]
 
 # fuck nginx
-
-# RUN npm run build
-
 # FROM nginx:1.21.1-alpine
 # 
 # COPY --from=build /app/dist /usr/share/nginx/html

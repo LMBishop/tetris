@@ -1,8 +1,7 @@
 import express from 'express';
 import router from './router.js';
 import cors from 'cors';
-import createWebsocketServer from './websocket/game.js';
-import { WebSocketServer } from 'ws';
+import createWebsocketServer from './websocket/websocket-router.js';
        
 const app = express();
 
@@ -19,4 +18,4 @@ const server = app.listen(port, () => {
     console.log(`Server listening on port ${port}`);
 });
 
-const websocketServer: WebSocketServer = createWebsocketServer(server);
+createWebsocketServer(server);

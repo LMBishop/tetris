@@ -10,19 +10,34 @@ const connected = ref(false);
 const gameState = ref('');
 const controlsLocked = ref(false);
 
-const socket = new WebSocket(`${import.meta.env.VITE_BACKEND_WS_URL}`);
-socket.onopen = () => {
-  socket.send(JSON.stringify({
-    action: 'join',
-    sessionId: sessionId,
-  }));
-};
+let moveTimeout: number;
+
+const socket = new WebSocket(`${import.meta.env.VITE_BACKEND_WS_URL}/coop?action=join&sessionId=${sessionId}`);
 socket.onmessage = (event) => {
   const data = JSON.parse(event.data);
-  if (data.action === 'state') {
-    gameState.value = data.state;
+  const type = data.type;
+  const payload = data.payload;
+
+  if (type === 'state') {
+    gameState.value = payload.state;
     joiningGame.value = false;
     connected.value = true;
+  }
+
+  if (type === 'timeout') {
+    const timeout = payload.timeoutUntil - Date.now();
+    if (timeout < 0) {
+      controlsLocked.value = false;
+      return;
+    }
+
+    controlsLocked.value = true; 
+    if (moveTimeout) {
+      clearTimeout(moveTimeout);
+    }
+    moveTimeout = setTimeout(() => {
+      controlsLocked.value = false;
+    }, timeout);
   }
 };
 
@@ -31,13 +46,11 @@ function sendMove(move: string) {
     return;
   }
   controlsLocked.value = true;
-  setTimeout(() => {
-    controlsLocked.value = false;
-  }, 1000);
   socket.send(JSON.stringify({
-    action: 'move',
-    sessionId: sessionId,
-    move: move,
+    type: 'move',
+    payload: {
+      move 
+    }
   }));
 }
 

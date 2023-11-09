@@ -16,46 +16,33 @@ function startGame() {
     return;
   }
   socket.send(JSON.stringify({
-    action: 'start',
-    sessionId: code.value,
+    type: 'start',
+    payload: {}
   }));
 }
 
-fetch(`${import.meta.env.VITE_BACKEND_BASE_URL}/session`,
-  {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
+socket = new WebSocket(`${import.meta.env.VITE_BACKEND_WS_URL}/coop?action=create`);
+
+socket.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  const type = data.type;
+  const payload = data.payload;
+
+  if (type === 'create') {
+    code.value = payload.sessionId;
+    waitingForCode.value = false;
+    url.value = `${import.meta.env.VITE_FRONTEND_BASE_URL}/join/${payload.sessionId}`;
+
+  } else if (type === 'join') {
+    numClients.value = payload.numberOfClients;
+
+  } else if (type === 'state') {
+    started.value = payload.state === 'playing';
+
+  } else if (type === 'move') {
+    inputQueue.value.push(payload.move);
   }
-).then(async (response) => {
-  const data: any = await response.json();
-  code.value = data.id;
-  url.value = `${import.meta.env.VITE_FRONTEND_BASE_URL}/join/${data.id}`;
-  waitingForCode.value = false;
-  openSocket(data.id);
-});
-
-function openSocket(id: string) {
-  socket = new WebSocket(`${import.meta.env.VITE_BACKEND_WS_URL}`);
-
-  socket.onopen = () => {
-    socket.send(JSON.stringify({
-      action: 'host',
-      sessionId: id,
-    }));
-  };
-  socket.onmessage = (event) => {
-    const data = JSON.parse(event.data);
-    if (data.action === 'join') {
-      numClients.value = data.clients;
-    } else if (data.action === 'state' && data.state === 'playing') {
-      started.value = true;
-    } else if (data.action === 'move') {
-      inputQueue.value.push(data.move);
-    }
-  };
-}
+};
 </script>
 
 <template>

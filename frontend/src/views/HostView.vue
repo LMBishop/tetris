@@ -21,6 +21,8 @@ function startGame() {
   }));
 }
 
+console.log(import.meta.env.VITE_BACKEND_WS_URL);
+
 socket = new WebSocket(`${import.meta.env.VITE_BACKEND_WS_URL}/coop?action=create`);
 
 socket.onmessage = (event) => {
